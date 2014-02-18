@@ -1,0 +1,44 @@
+extends layout
+block content
+	div(ng-controller="setListCtrl")
+		nav.navbar.navbar-inverse.navbar-fixed-top
+			a(href="#").navbar-brand Rock Werchter 2014 SetList
+			ul.nav.navbar-nav
+				li.active
+				li
+					a(href="#") Currently Confirmed  
+						span.badge(ng-model="lineup.length")  {{lineup.length}}
+				li
+					a(data-toggle="modal", href="#addArtistsModal") Add Artists
+
+
+		ul.list-group.col-lg-2(style='max-height:750px;overflow-y:scroll')
+			a.list-group-item
+				input(type="search", required, placeholder="serach", ng-model='artistSearchFilter').form-control
+			a.list-group-item(ng-repeat="artist in lineup | filter:artistSearchFilter", ng-click="showSetList(artist)",ng-class="{active : selectedArtist.name == artist.name}")
+				{{artist.name}}
+
+		.col-lg-5
+			.panel.panel-info(ng-show="selectedArtist")
+				.panel-heading
+					h3(ng-if="!selectedArtist.topSongs").panel-title {{selectedArtist.name}}
+					h3(ng-if="selectedArtist.topSongs").panel-title {{selectedArtist.name}} - {{selectedArtist.topSongs.len}} Songs!
+					
+				.panel-body
+					ul.list-group(ng-if="selectedArtist.topSongs", style='max-height:700px;overflow-y:scroll')
+						a.list-group-item
+							input(type="search", required, placeholder="serach", ng-model='songSearchFilter').form-control
+						li.list-group-item(ng-if="song !== 'len'", ng-repeat="song in selectedArtist.topSongs | orderBy:'timesPlayed'")
+							a {{song.name}}
+								span.badge.active   {{song.timesPlayed}}
+
+		#addArtistsModal.modal.fade
+			.modal-dialog
+				.modal-content
+					.modal-header
+						h4.modal-title Add Artists to LineUp
+					.modal-body
+						textarea.form-control(placeholder="enter lineup", rows="5", ng-model="addArtistsInput")
+					.modal-footer
+						button.btn.btn-default(type='button', data-dismiss='modal') Close
+						button.btn.btn-primary(type="button", ng-click="addArtists()") Submit
