@@ -16,10 +16,10 @@ exports.list = function (req, res) {
 
 exports.add = function (req, res) {
 	var lineup = req.body.lineup;
-	for (i in lineup){
+	for (var i in lineup){
 		var artist = new Artist();
 		artist.name = lineup[i];
-		artist.save();		
+		artist.save();
 	}
 	res.send(200);
 };
