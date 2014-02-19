@@ -8,7 +8,8 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', function($
 
 	$scope.lineup = [];
 	$scope.selectedArtist = null;
-
+	$scope.festivalName = null;
+	$scope.festivalYear = null;
 	var artistCache = {};
 
 
@@ -40,21 +41,22 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', function($
 		return topSongsArray;
 	}
 
-	getArtists("rockwerchter", 2014, function (err, artists) {
-		if (err)
-			return console.error(err);
-		
-		for(var i in artists)
-		{
-			$scope.lineup.push({
-				name: artists[i]
+	$scope.getLineup = function (){
+		getArtists($scope.festivalName, $scope.festivalYear, function (err, artists) {
+				if (err)
+					return console.error(err);
+				
+				for(var i in artists)
+				{
+					$scope.lineup.push({
+						name: artists[i]
+					});
+				}
 			});
-		}
-	});
+	}
 
 	function getArtists(festivalName, year, callback) {
 		var lineupUrl = "http://anyorigin.com/dev/get?url=http%3A//www.efestivals.co.uk/festivals/" + festivalName + "/" + year + "/lineup.shtml&callback=JSON_CALLBACK";
-
 		$http.jsonp(lineupUrl).success(function (data) {
 			if(data.contents.indexOf("alarm") === 0)
 				return getArtists(festivalName, year, callback);
