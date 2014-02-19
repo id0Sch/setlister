@@ -21,13 +21,13 @@ block content
 			.panel.panel-info(ng-show="selectedArtist")
 				.panel-heading
 					h3(ng-if="!selectedArtist.topSongs").panel-title {{selectedArtist.name}}
-					h3(ng-if="selectedArtist.topSongs").panel-title {{selectedArtist.name}} - {{selectedArtist.topSongs.len}} Songs!
+					h3(ng-if="selectedArtist.topSongs").panel-title {{selectedArtist.name}} - {{selectedArtist.topSongs.length}} Songs!
 					
 				.panel-body
 					ul.list-group(ng-if="selectedArtist.topSongs", style='max-height:400px;overflow-y:scroll')
 						a.list-group-item
 							input(type="search", required, placeholder="serach", ng-model='songSearchFilter').form-control
-						li.list-group-item(ng-if="song !== 'len'", ng-repeat="song in selectedArtist.topSongs | orderBy:'song.timesPlayed'")
+						li.list-group-item(ng-repeat="song in selectedArtist.topSongs | orderBy:'timesPlayed':true")
 							a {{song.name}}
 								span.badge.active   {{song.timesPlayed}}
 							a.pull-right(ng-click="getYoutubeSongLink(selectedArtist.name, song.name)", target="_blank") Listen in Youtube
