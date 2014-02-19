@@ -6,5 +6,5 @@
 	-al forever.log \
 	-ao out.log \
 	-ae err.log \
-	app.js
+	NODE_ENV=production app.js
 
