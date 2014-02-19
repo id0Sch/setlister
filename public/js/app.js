@@ -53,7 +53,6 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', function($
 
 	function getArtists(festivalName, year, callback) {
 		var lineupUrl = "http://anyorigin.com/dev/get?url=http%3A//www.efestivals.co.uk/festivals/" + festivalName + "/" + year + "/lineup.shtml&callback=JSON_CALLBACK";
-		//var lineupUrl = "http://anyorigin.com/dev/get/?url=http%3A//www.efestivals.co.uk/festivals/rockwerchter/2014/lineup.shtml";
 
 		$http.jsonp(lineupUrl).success(function (data) {
 			if(data.contents.indexOf("alarm") === 0)
@@ -72,12 +71,11 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', function($
 		});
 	}
 
-	function getYoutubeSongLink (artistName, songName) {
+	function getYoutubeSongLink (artistName, songName, callback) {
 		var	youtubeQuery = 'http://gdata.youtube.com/feeds/api/videos?q=%22'+ encodeURIComponent(artistName +' '+songName) +'%22&orderby=viewCount&alt=json&callback=JSON_CALLBACK';
 		$http.jsonp(youtubeQuery).success( function (data){
 			var url= data.feed.entry[0].link[0].href;
-			console.log(url);
-			return url;
+			return callback(url);
 		});
 	}
 	
@@ -150,14 +148,6 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', function($
 						$scope.selectedArtist.topSongs = false;
 				});
 			}
-		});
-	};
-
-	$scope.addArtists = function (){
-		var artistsList = $scope.addArtistsInput.split('\n');
-
-		$http.post('/add',{lineup: artistsList}).success(function (err, data){
-			list();
 		});
 	};
 }]);
