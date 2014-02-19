@@ -9,35 +9,56 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', function($
 	$scope.lineup = [];
 	$scope.selectedArtist = null;
 
-	function getTopSongs (songList){
+	var artistCache = {};
+
+
+	function getTopSongs (songList) {
 		var topSongs = {};
-		topSongs.len = 0;
 
-		for (var i = 0; i in songList; i++){
-			if (topSongs[songList[i]]) {
-				topSongs[songList[i]].timesPlayed++;
-			}
-			else {
-				topSongs[songList[i]] = {name : songList[i], timesPlayed :1};
-				topSongs.len++;
-			}
+		for (var i in songList) {
+			var song = songList[i];
+
+			if (!topSongs[song])
+				topSongs[song] = {
+					name: song,
+					timesPlayed: 0
+				};
+
+			++topSongs[song].timesPlayed;
 		}
-		return topSongs;
-	};
 
-	getArtists("rockwerchter", 2014, function (err, data) {
+		var topSongsArray = [];
+
+		for (var currentSong in topSongs) {
+			topSongsArray.push({
+				timesPlayed: topSongs[currentSong].timesPlayed,
+				name: currentSong
+			});
+		}
+
+		console.log(topSongsArray);
+		return topSongsArray;
+	}
+
+	getArtists("rockwerchter", 2014, function (err, artists) {
 		if (err)
 			return console.error(err);
 		
-		console.log(data);
+		for(var i in artists)
+		{
+			$scope.lineup.push({
+				name: artists[i]
+			});
+		}
 	});
 
 	function getArtists(festivalName, year, callback) {
 		var lineupUrl = "http://anyorigin.com/dev/get?url=http%3A//www.efestivals.co.uk/festivals/" + festivalName + "/" + year + "/lineup.shtml&callback=JSON_CALLBACK";
 
 		$http.jsonp(lineupUrl).success(function (data) {
-			if(data.contents.indexOf("alarm") == 0)
-				return callback('error gettings data');
+			if(data.contents.indexOf("alarm") === 0)
+				return getArtists(festivalName, year, callback);
+				//return callback('error gettings data');
 
 			var pattern=/Tiny.*?1\">\(C\)<\/span> (.*?)<\/a>/ig;
 
@@ -57,20 +78,21 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', function($
 			var url= data.feed.entry[0].link[0].href;
 			return callback(url);
 		});
-	};
+	}
 	
 	function getSongs (artist, pageNumber, callback) {
 		var songList = [],
 			setListURL = 'http://anyorigin.com/dev/get?url=http%3A//api.setlist.fm/rest/0.1/search/setlists.json%3FartistName%3D'+artist.name+'%26p%3D'+pageNumber+'&callback=JSON_CALLBACK';
 		$http.jsonp(setListURL).success( function (data){
-			console.log(data);
 			if (!data.contents.setlists)
 			{
 				callback([]);
 				return;
 			}
+
 			setlists = data.contents.setlists.setlist;
-			for (set in setlists){
+			
+			for (var set in setlists){
 				if (setlists[set].sets){
 					if (setlists[set].sets.set.song){
 						for (song in setlists[set].sets.set.song){
@@ -80,10 +102,10 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', function($
 						}
 					}
 					else {
-						for(sub_set in setlists[set].sets.set){
+						for(var sub_set in setlists[set].sets.set){
 							for (song in setlists[set].sets.set[sub_set].song){
 								songName = setlists[set].sets.set[sub_set].song[song]['@name'];
-								if (songName) 
+								if (songName)
 									songList.push(songName.capitalize());
 							}
 						}
@@ -106,7 +128,15 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', function($
 		}
 
 		$scope.selectedArtist = artist;
+
+		if ($scope.selectedArtist.topSongs)
+		{
+			console.log($scope.selectedArtist.topSongs);
+			return;
+		}
+
 		$scope.selectedArtist.topSongs = null;
+
 		getSongs(artist, pageNumber, function (songList){
 			if (songList.length > 0)
 				$scope.selectedArtist.topSongs = getTopSongs(songList);
@@ -115,18 +145,10 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', function($
 				getSongs(artist, pageNumber, function (songListII){
 					if (songListII.length > 0)
 						$scope.selectedArtist.topSongs = getTopSongs(songListII);
-					elsehh
+					else
 						$scope.selectedArtist.topSongs = false;
 				});
 			}
 		});
 	};
-
-	$scope.list = function (){
-		$http.get('/list').success(function (data){
-			$scope.lineup = data;
-		});
-	};
-
-	$scope.list();
 }]);
