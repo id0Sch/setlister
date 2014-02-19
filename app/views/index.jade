@@ -7,8 +7,8 @@ block content
 			ul.nav.navbar-nav
 				li.active
 			ul.nav.navbar-nav.navbar-right
-				li.pull-right
-					a(data-toggle="modal", href="#addArtistsModal") Add
+				li: a(data-toggle="modal", href="#searchFestivalModal") Search Festival
+
 		ul.list-group.col-lg-3(style='max-height:500px;overflow-y:scroll')
 			a.list-group-item.active RockWerchter 2014 
 				span.badge(ng-model="lineup.length")  {{lineup.length}}
@@ -30,16 +30,20 @@ block content
 						li.list-group-item(ng-if="song !== 'len'", ng-repeat="song in selectedArtist.topSongs | orderBy:'song.timesPlayed'")
 							a {{song.name}}
 								span.badge.active   {{song.timesPlayed}}
-							a.pull-right(ng-click="getYoutubeSongLink(selectedArtist.name, song.name)", target="_blank") Listen in Youtube
+							a.pull-right(ng-click="getYoutubeSongLink(selectedArtist.topSongs, song.name)", target="_blank") Listen in Youtube
 								span.glyphicon.glyphicon-headphones
 
-		#addArtistsModal.modal.fade
+		#searchFestivalModal.modal.fade
 			.modal-dialog
 				.modal-content
 					.modal-header
-						h4.modal-title Add Artists to LineUp
+						h4.modal-title Search for Festival
 					.modal-body
-						textarea.form-control(placeholder="enter lineup", rows="5", ng-model="addArtistsInput")
+							form-horizontal
+								.col-lg-5
+									input.form-control(rows="5", ng-model="festivalName", placeholder="festival Name")
+								.col-lg-2
+									input.form-control(type="text", ng-model="festivalYear", placeholder="year")
 					.modal-footer
 						button.btn.btn-default(type='button', data-dismiss='modal') Close
-						button.btn.btn-primary(type="button", ng-click="addArtists()") Submit
+						button.btn.btn-primary(type="button", ng-click="searchFestival()") Submit
