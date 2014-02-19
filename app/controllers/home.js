@@ -7,6 +7,9 @@ exports.index = function(req, res){
 
 exports.list = function (req, res) {
 	Artist.find().sort({'_id': -1}).exec(function (err, artists) {
+		if (err){
+			res.send(500);
+		}
 		res.send(artists);
 	});
 };

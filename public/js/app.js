@@ -29,6 +29,7 @@ setListApp.controller('setListCtrl', ['$scope', '$http', function($scope, $http)
 		var songList = [],
 			setListURL = 'http://anyorigin.com/dev/get?url=http%3A//api.setlist.fm/rest/0.1/search/setlists.json%3FartistName%3D'+artist.name+'%26p%3D'+pageNumber+'&callback=JSON_CALLBACK';
 		$http.jsonp(setListURL).success( function (data){
+			console.log(data);
 			if (!data.contents.setlists)
 			{
 				callback([]);
