@@ -27,7 +27,7 @@ var config = {
       name: 'setlist'
     },
     port: 3000,
-    db: 'mongodb://root:bitnami@localhost/setlist-production'
+    db: 'mongodb://setlist:setlist@localhost/setlist-production'
   }
 };
 
