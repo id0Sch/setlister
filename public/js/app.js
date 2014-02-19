@@ -1,6 +1,6 @@
 var setListApp = angular.module('setListApp', []);
 
-setListApp.controller('setListCtrl', ['$scope', '$http', function($scope, $http) {
+setListApp.controller('setListCtrl', ['$scope', '$http', '$location', function($scope, $http, $location) {
 
 	String.prototype.capitalize = function() {
 		return this.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
@@ -23,7 +23,7 @@ setListApp.controller('setListCtrl', ['$scope', '$http', function($scope, $http)
 			}
 		}
 		return topSongs;
-	}
+	};
 
 	getArtists("rockwerchter", 2014, function (err, data) {
 		if (err)
@@ -52,6 +52,15 @@ setListApp.controller('setListCtrl', ['$scope', '$http', function($scope, $http)
 		});
 	}
 
+	function getYoutubeSongLink (artistName, songName) {
+		var	youtubeQuery = 'http://gdata.youtube.com/feeds/api/videos?q=%22'+ encodeURIComponent(artistName +' '+songName) +'%22&orderby=viewCount&alt=json&callback=JSON_CALLBACK';
+		$http.jsonp(youtubeQuery).success( function (data){
+			var url= data.feed.entry[0].link[0].href;
+			console.log(url);
+			return url;
+		});
+	};
+	
 	function getSongs (artist, pageNumber, callback) {
 		var songList = [],
 			setListURL = 'http://anyorigin.com/dev/get?url=http%3A//api.setlist.fm/rest/0.1/search/setlists.json%3FartistName%3D'+artist.name+'%26p%3D'+pageNumber+'&callback=JSON_CALLBACK';
@@ -108,7 +117,7 @@ setListApp.controller('setListCtrl', ['$scope', '$http', function($scope, $http)
 				getSongs(artist, pageNumber, function (songListII){
 					if (songListII.length > 0)
 						$scope.selectedArtist.topSongs = getTopSongs(songListII);
-					else
+					elsehh
 						$scope.selectedArtist.topSongs = false;
 				});
 			}
@@ -124,10 +133,9 @@ setListApp.controller('setListCtrl', ['$scope', '$http', function($scope, $http)
 	$scope.addArtists = function (){
 		var artistsList = $scope.addArtistsInput.split('\n');
 		$http.post('/add',{lineup: artistsList}).success(function (err, data){
-			if (!err)
-				$scope.list();
+			$scope.list();
 		});
 	};
-	
+
 	$scope.list();
 }]);
