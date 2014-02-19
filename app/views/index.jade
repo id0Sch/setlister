@@ -27,7 +27,7 @@ block content
 					ul.list-group(ng-if="selectedArtist.topSongs", style='max-height:400px;overflow-y:scroll')
 						a.list-group-item
 							input(type="search", required, placeholder="serach", ng-model='songSearchFilter').form-control
-						li.list-group-item(ng-repeat="song in selectedArtist.topSongs | orderBy:'timesPlayed':true")
+						li.list-group-item(ng-repeat="song in selectedArtist.topSongs | orderBy:'timesPlayed':true | limitTo: 15")
 							a {{song.name}}
 								span.badge.active   {{song.timesPlayed}}
 							a.pull-right(ng-click="getYoutubeSongLink(selectedArtist.topSongs, song.name)", target="_blank") Listen in Youtube

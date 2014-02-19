@@ -55,15 +55,19 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', function($
 		var lineupUrl = "http://anyorigin.com/dev/get?url=http%3A//www.efestivals.co.uk/festivals/" + festivalName + "/" + year + "/lineup.shtml&callback=JSON_CALLBACK";
 
 		$http.jsonp(lineupUrl).success(function (data) {
-			if(data.contents.indexOf("alarm") === 0)
+			if(data.contents.indexOf("alarm") === 0) {
+				console.error("Error! retrying...");
 				return getArtists(festivalName, year, callback);
-				//return callback('error gettings data');
+			}
 
 			var pattern=/Tiny.*?1\">\(C\)<\/span> (.*?)<\/a>/ig;
 
 			var artists = [];
 			
-			while (match = pattern.exec(data.contents)) {
+			var contents = data.contents;
+			
+			while (match = pattern.exec(contents)) {
+				console.log(match);
 				artists.push(match[1].replace('<span class="lu_new1">', '').replace("</span>", ""));
 			}
 
