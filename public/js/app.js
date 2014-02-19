@@ -36,7 +36,6 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', function($
 			});
 		}
 
-		console.log(topSongsArray);
 		return topSongsArray;
 	}
 
