@@ -6,8 +6,34 @@ block content
 				span.glyphicon.glyphicon-headphones
 			ul.nav.navbar-nav
 				li.active
-			ul.nav.navbar-nav.navbar-right
-				li: a(data-toggle="modal", href="#searchFestivalModal") Search Festival
+			ul.nav.navbar-nav
+				li.active
+					a(data-toggle="modal", data-target="#searchFestivalModal") Search for Festival
+
+		button(type='button', ng-click="play()").btn.btn-default button
+
+		nav(collapse='!player.active', role="navigation").navbar.navbar-default.navbar-fixed-bottom
+			youtube#youtubePlayer(style="display:none;", autoplay="{{autoplay}}", controls="1")
+			ul.navbar-brand: span.glyphicon.glyphicon-step-backward(ng-click="player.commands.previous()")
+			ul.navbar-brand: span.glyphicon(ng-click="player.commands.togglePlayPause()",
+											ng-class='{"glyphicon-pause": player.state, "glyphicon-play" : !player.state}')
+			ul.navbar-brand: span.glyphicon.glyphicon-step-forward(ng-click="player.commands.next()")
+			ul.navbar-brand: span.glyphicon(ng-click="player.commands.toggleMute()",
+											ng-class="{'glyphicon-volume-off': player.mute, 'glyphicon-volume-up': !player.mute}")
+			ul.nav.navbar-nav
+				li.active: a {{currentPlaylist[player.playlistIndex].artist}} - {{currentPlaylist[player.playlistIndex].name}}
+
+			.pull-right
+				ul.navbar-brand
+					span {{player.playlistIndex+1}} \ {{currentPlaylist.length}}
+				ul.navbar-brand.dropdown
+					a(href="#", data-toggle="dropdown").dropdown-toggle
+						span.glyphicon.glyphicon-list
+					ul.dropdown-menu.dropup.pull-right(style='max-height:500px;overflow-y:scroll')
+						li(ng-repeat="song in currentPlaylist | orderBy:'song.index'",
+							ng-class='{active: player.playlistIndex == song.index}',
+							ng-click='player.commands.jumpTo(song.index)')
+							a {{song.artist}} - {{song.name}}
 
 		ul.list-group.col-lg-3(ng-if="festivalName", style='max-height:500px;overflow-y:scroll')
 			a.list-group-item.active {{festivalName}} - {{festivalYear}}
@@ -17,12 +43,15 @@ block content
 			a.list-group-item(ng-repeat="artist in lineup | filter:artistSearchFilter", ng-click="showSetList(artist)",ng-class="{active : selectedArtist.name == artist.name}")
 				{{artist.name}}
 
-		.col-lg-5
+		.col-lg-7
 			.panel.panel-info(ng-show="selectedArtist")
 				.panel-heading
 					h3(ng-if="!selectedArtist.topSongs").panel-title {{selectedArtist.name}}
-					h3(ng-if="selectedArtist.topSongs").panel-title {{selectedArtist.name}} - {{selectedArtist.topSongs.length}} Songs!
-					
+					h3(ng-if="selectedArtist.topSongs").panel-title
+					|	{{selectedArtist.name}} - {{selectedArtist.topSongs.length}} Songs!
+					a.pull-right Listen in Youtube
+						span.glyphicon.glyphicon-headphones
+
 				.panel-body
 					ul.list-group(ng-if="selectedArtist.topSongs", style='max-height:400px;overflow-y:scroll')
 						a.list-group-item
@@ -30,8 +59,9 @@ block content
 						li.list-group-item(ng-repeat="song in selectedArtist.topSongs | orderBy:'timesPlayed':true | limitTo: 15")
 							a {{song.name}}
 								span.badge.active   {{song.timesPlayed}}
-							a.pull-right(ng-click="getYoutubeSongLink(selectedArtist.topSongs, song.name)", target="_blank") Listen in Youtube
+							a.pull-right(ng-click="openYoutube(selectedArtist.name, song.name)", target="_blank")
 								span.glyphicon.glyphicon-headphones
+								| Listen in Youtube
 
 		#searchFestivalModal.modal.fade
 			.modal-dialog
