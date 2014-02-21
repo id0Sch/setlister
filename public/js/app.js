@@ -14,8 +14,8 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 
 	$scope.currentPlaylist = [];
 
-	$scope.festivalName = 'southside';
-	$scope.festivalYear = '2013';
+	$scope.festivalName = 'rockwerchter';
+	$scope.festivalYear = '2014';
 
 	$scope.player = ytplayer;
 	$scope.player.state = Boolean(parseInt($scope.autoplay,10));
@@ -148,12 +148,9 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 	};
 
 	function getArtists(festivalName, year, callback) {
-		var lineupUrl = 'http://demo.allow-any-origin.appspot.com/http://www.virtualfestivals.com/'+festivalName+'-festival-'+ year+'/lineup&callback=JSON_CALLBACK';
+		// var lineupUrl = 'http://whateverorigin.org/get?url=http%3A//efestivals.co.uk/festivals/'+ festivalName + '/'+year+'/lineup.shtml&callback=JSON_CALLBACK';
+		var lineupUrl = 'http://allow-any-origin.appspot.com/http%3A//efestivals.co.uk/festivals/'+ festivalName + '/'+year+'/lineup.shtml';
 		$http.get(lineupUrl).success(function (data) {
-			if(data.contents.indexOf('alarm') === 0) {
-				console.error('Error! retrying...');
-				return getArtists(festivalName, year, callback);
-			}
 
 			var pattern=/Tiny.*?1\">\(C\)<\/span> (.*?)<\/a>/ig;
 
@@ -162,17 +159,19 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 			var contents = data.contents;
 
 			while (match = pattern.exec(contents)) {
-				artists.push(match[1].replace('<span class="lu_new1">', '').replace("</span>", ""));
+				artists.push(match[1].replace('<span class="lu_new1">', '').replace('<span class="lu_new5">', '').replace("</span>", ""));
 			}
-
 			callback(null, artists);
 		});
 	}
 
 	function getSongs (artist, pageNumber, callback) {
 		var songList = [],
-			setListURL = 'http://anyorigin.com/dev/get?url=http%3A//api.setlist.fm/rest/0.1/search/setlists.json%3FartistName%3D'+artist.name+'%26p%3D'+pageNumber+'&callback=JSON_CALLBACK';
+			// setListURL = 'http://whateverorigin.org/get?url=http://api.setlist.fm/rest/0.1/search/setlists.json%3FartistName%3D'+artist.name+'%26p%3D'+pageNumber+'&callback=JSON_CALLBACK';
+			setListURL = 'http://allow-any-origin.appspot.com/http://api.setlist.fm/rest/0.1/search/setlists.json%3FartistName%3D'+artist.name+'%26p%3D'+pageNumber+'&callback=JSON_CALLBACK';
+
 		$http.jsonp(setListURL).success( function (data){
+			console.log(data);
 			if (!data.contents.setlists)
 			{
 				callback([]);
@@ -239,6 +238,7 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 			}
 		});
 	};
+	$scope.getLineup()
 }]);
 
 setListApp.directive('youtube', ['youtubePlayer', function (YtPlayerApi) {
