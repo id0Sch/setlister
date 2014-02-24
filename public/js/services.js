@@ -23,7 +23,7 @@ angular.module('youtube.api.services',[]).run(['$rootScope','$window',function($
 		'height':390,
 		'width':640,
 		'listType':null,
-		'playlist':null,
+		'playlist':[],
 		'playlistIndex':0,
 		'setShuffle':null,
 		'state':null,
@@ -44,7 +44,9 @@ angular.module('youtube.api.services',[]).run(['$rootScope','$window',function($
 		setPlayList : function (list) {
 			this.listType = 'playlist';
 			this.setShuffle = true;
-			this.playlist = list.toString();
+			this.playlist = this.playlist.concat(list);
+
+			console.log(this.playlist);
 		},
 		setVideoId: function(videoId) {
 			this.videoId = videoId;
@@ -55,7 +57,7 @@ angular.module('youtube.api.services',[]).run(['$rootScope','$window',function($
 			if (this.listType) {
 				playerConfig.playerVars.listType=this.listType;
 				playerConfig.playerVars.setShuffle=this.setShuffle;
-				playerConfig.playerVars.playlist=this.playlist;
+				playerConfig.playerVars.playlist=this.playlist.toString();
 			}
 			else {
 				playerConfig.videoId=this.videoId;
@@ -95,6 +97,9 @@ angular.module('youtube.api.services',[]).run(['$rootScope','$window',function($
 		jumpTo:function(value){
 			this.playerObj.playVideoAt(value);
 		},
+		cueVideo:function (id) { // loads the video but does not play - do not mistake for adding to queqe
+			this.playerObj.cueVideoById(id);
+		}
 	};
 	return ytplayer;
-}])
+}]);

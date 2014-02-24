@@ -7,7 +7,7 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 	};
 
 	$scope.lineup = [];
-	$scope.autoplay = '0';
+
 	$scope.selectedArtist = null;
 	$scope.festivalName = null;
 	$scope.festivalYear = null;
@@ -18,7 +18,8 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 	$scope.festivalYear = '2014';
 
 	$scope.player = ytplayer;
-	$scope.player.state = Boolean(parseInt($scope.autoplay,10));
+	$scope.player.autoplay = '1';
+	$scope.player.state = Boolean(parseInt($scope.player.autoplay,10));
 	var index = 0;
 
 	$scope.player.commands = {
@@ -32,6 +33,8 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 		jumpTo:function(index){
 			$scope.player.playlistIndex = index;
 			$scope.player.jumpTo(index);
+			if (!$scope.player.state)
+				$scope.player.state = !$scope.player.state;
 		},
 		next:function(){
 			if ($scope.currentPlaylist.length-1 === $scope.player.playlistIndex)
@@ -56,7 +59,6 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 			$scope.player.mute = !$scope.player.mute;
 		}
 	};
-	var artistCache = {};
 
 	$scope.play = function (){
 		index = 0;
@@ -64,10 +66,8 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 		$scope.playlistIndex = 0;
 
 		var songs = [
-			['Roadside', 'Rise Against'],
 			['Evil Twin', 'Arctic Monkeys'],
 			['R U Mine?', 'Arctic Monkeys '],
-			['KILL EVERYBODY', 'SKRILLEX' ],
 			['RATHER BE','CLEAN BANDIT FT JESS GLYNNE'],
 			['STAY THE NIGHT','ZEDD FT HAYLEY WILLIAMS'],
 			['HAPPY','PHARRELL WILLIAMS']
@@ -76,7 +76,7 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 			$scope.player.setPlayList(currentPlaylistIds);
 			$scope.player.loadPlayer();
 		});
-	};
+	}
 
 	function getPlaylistIds (songs, callback){
 		var currentPlaylistIds = [];
@@ -148,10 +148,10 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 	};
 
 	function getArtists(festivalName, year, callback) {
-		// var lineupUrl = 'http://whateverorigin.org/get?url=http%3A//efestivals.co.uk/festivals/'+ festivalName + '/'+year+'/lineup.shtml&callback=JSON_CALLBACK';
-		var lineupUrl = 'http://allow-any-origin.appspot.com/http%3A//efestivals.co.uk/festivals/'+ festivalName + '/'+year+'/lineup.shtml';
+		var lineupUrl = 'http://whateverorigin.org/get?url=http%3A//efestivals.co.uk/festivals/'+ festivalName + '/'+year+'/lineup.shtml&callback=JSON_CALLBACK';
+		// var lineupUrl = 'http://allow-any-origin.appspot.com/http://efestivals.co.uk/festivals/'+ festivalName + '/'+year+'/lineup.shtml&callback=JSON_CALLBACK';
+		console.log(lineupUrl);
 		$http.get(lineupUrl).success(function (data) {
-
 			var pattern=/Tiny.*?1\">\(C\)<\/span> (.*?)<\/a>/ig;
 
 			var artists = [];
@@ -159,7 +159,9 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 			var contents = data.contents;
 
 			while (match = pattern.exec(contents)) {
-				artists.push(match[1].replace('<span class="lu_new1">', '').replace('<span class="lu_new5">', '').replace("</span>", ""));
+				artists.push(match[1].replace('<span class="lu_new1">', '')
+									.replace('<span class="lu_new5">', '')
+									.replace('</span>', ''));
 			}
 			callback(null, artists);
 		});
@@ -167,9 +169,7 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 
 	function getSongs (artist, pageNumber, callback) {
 		var songList = [],
-			// setListURL = 'http://whateverorigin.org/get?url=http://api.setlist.fm/rest/0.1/search/setlists.json%3FartistName%3D'+artist.name+'%26p%3D'+pageNumber+'&callback=JSON_CALLBACK';
-			setListURL = 'http://allow-any-origin.appspot.com/http://api.setlist.fm/rest/0.1/search/setlists.json%3FartistName%3D'+artist.name+'%26p%3D'+pageNumber+'&callback=JSON_CALLBACK';
-
+			setListURL = 'http://whateverorigin.org/get?url=http://api.setlist.fm/rest/0.1/search/setlists.json%3FartistName%3D'+artist.name+'%26p%3D'+pageNumber+'&callback=JSON_CALLBACK';
 		$http.jsonp(setListURL).success( function (data){
 			console.log(data);
 			if (!data.contents.setlists)
@@ -205,9 +205,7 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 	}
 
 	$scope.showSetList = function (artist){
-		var	setlists = null,
-			songName = null,
-			pageNumber = 1;
+		var pageNumber = 1;
 
 		if ($scope.selectedArtist !== null && $scope.selectedArtist.name === artist.name)
 		{
@@ -238,23 +236,22 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 			}
 		});
 	};
-	$scope.getLineup()
+	$scope.getLineup();
 }]);
 
 setListApp.directive('youtube', ['youtubePlayer', function (YtPlayerApi) {
-		return {
-			restrict:'E',
-			link:function (scope,element,attrs) {
-				YtPlayerApi.setPlayerId(attrs.id);
-				var player_vars={};
-				var allowed_vars=['autoplay','controls','html5'];
-				for (var idx in allowed_vars) {
-					if (allowed_vars[idx] in attrs) {
-						player_vars[allowed_vars[idx]]=attrs[allowed_vars[idx]];
-					}
+	return {
+		restrict:'E',
+		link:function (scope,element,attrs) {
+			YtPlayerApi.setPlayerId(attrs.id);
+			var player_vars={};
+			var allowed_vars=['autoplay','controls','html5'];
+			for (var idx in allowed_vars) {
+				if (allowed_vars[idx] in attrs) {
+					player_vars[allowed_vars[idx]]=attrs[allowed_vars[idx]];
 				}
-				YtPlayerApi.setPlayerVars(player_vars);
-				YtPlayerApi.setVideoId(attrs.src);
 			}
-		};
-	}]);
+			YtPlayerApi.setPlayerVars(player_vars);
+		}
+	};
+}]);

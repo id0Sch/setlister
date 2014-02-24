@@ -11,9 +11,10 @@ block content
 					a(data-toggle="modal", data-target="#searchFestivalModal") Search for Festival
 
 		button(type='button', ng-click="play()").btn.btn-default button
+		button(type='button', ng-click="cue()").btn.btn-warning button
 
 		nav(collapse='!player.active', role="navigation").navbar.navbar-default.navbar-fixed-bottom
-			youtube#youtubePlayer(style="display:none;", autoplay="{{autoplay}}", controls="1")
+			youtube#youtubePlayer(style="display:none;", autoplay="{{player.autoplay}}")
 			ul.navbar-brand: span.glyphicon.glyphicon-step-backward(ng-click="player.commands.previous()")
 			ul.navbar-brand: span.glyphicon(ng-click="player.commands.togglePlayPause()",
 											ng-class='{"glyphicon-pause": player.state, "glyphicon-play" : !player.state}')
