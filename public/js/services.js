@@ -14,6 +14,7 @@ angular.module('youtube.api.services',[]).run(['$rootScope','$window',function($
 	};
 	var ytplayer = {
 		'active':false,
+		'index':0,
 		'playerId':null,
 		'playerObj':null,
 		'videoId':null,
@@ -43,10 +44,7 @@ angular.module('youtube.api.services',[]).run(['$rootScope','$window',function($
 		},
 		setPlayList : function (list) {
 			this.listType = 'playlist';
-			this.setShuffle = true;
 			this.playlist = this.playlist.concat(list);
-
-			console.log(this.playlist);
 		},
 		setVideoId: function(videoId) {
 			this.videoId = videoId;
@@ -99,6 +97,10 @@ angular.module('youtube.api.services',[]).run(['$rootScope','$window',function($
 		},
 		cueVideo:function (id) { // loads the video but does not play - do not mistake for adding to queqe
 			this.playerObj.cueVideoById(id);
+		},
+		getVideoLoadedFraction: function() { // returns a number between 0 -1 that represents the precentage of video bufferd (not played!)
+			if (this.playerObj)
+				return this.playerObj.getVideoLoadedFraction();
 		}
 	};
 	return ytplayer;

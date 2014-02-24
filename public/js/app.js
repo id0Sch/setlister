@@ -9,61 +9,63 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 	$scope.lineup = [];
 
 	$scope.selectedArtist = null;
+	$scope.player = null;
 	$scope.festivalName = null;
 	$scope.festivalYear = null;
-
-	$scope.currentPlaylist = [];
-
 	$scope.festivalName = 'rockwerchter';
 	$scope.festivalYear = '2014';
 
-	$scope.player = ytplayer;
-	$scope.player.autoplay = '1';
-	$scope.player.state = Boolean(parseInt($scope.player.autoplay,10));
-	var index = 0;
-
-	$scope.player.commands = {
-		togglePlayPause:function(){
-			if (!$scope.player.state)
-				$scope.player.playVideo();
-			else
-				$scope.player.pauseVideo();
-			$scope.player.state = !$scope.player.state;
-		},
-		jumpTo:function(index){
-			$scope.player.playlistIndex = index;
-			$scope.player.jumpTo(index);
-			if (!$scope.player.state)
+	function initPlayer (){
+		$scope.currentPlaylist = [];
+		$scope.player = ytplayer;
+		$scope.player.autoplay = '1';
+		$scope.player.state = Boolean(parseInt($scope.player.autoplay,10));
+		var index = 0;
+		$scope.player.commands = {
+			togglePlayPause:function(){
+				if (!$scope.player.state)
+					$scope.player.playVideo();
+				else
+					$scope.player.pauseVideo();
 				$scope.player.state = !$scope.player.state;
-		},
-		next:function(){
-			if ($scope.currentPlaylist.length-1 === $scope.player.playlistIndex)
-				return;
-			$scope.player.playlistIndex ++ ;
-			$scope.player.nextVideo();
-		},
-		previous:function(){
-			if ($scope.player.playlistIndex > 0 )
-				$scope.player.playlistIndex -- ;
-			$scope.player.previousVideo();
-		},
-		rePlay:function(){
-			$scope.player.seekTo(0);
-		},
-		toggleMute:function(){
-			if (!$scope.player.mute)
-				$scope.player.muteVideo();
-			if ($scope.player.mute)
-				$scope.player.unMuteVideo();
+			},
+			jumpTo:function(index){
+				$scope.player.playlistIndex = index;
+				$scope.player.jumpTo(index);
+				if (!$scope.player.state)
+					$scope.player.state = !$scope.player.state;
+			},
+			next:function(){
+				if ($scope.currentPlaylist.length-1 === $scope.player.playlistIndex)
+					return;
+				$scope.player.playlistIndex ++ ;
+				$scope.player.nextVideo();
+			},
+			previous:function(){
+				if ($scope.player.playlistIndex > 0 )
+					$scope.player.playlistIndex -- ;
+				$scope.player.previousVideo();
+			},
+			rePlay:function(){
+				$scope.player.seekTo(0);
+			},
+			toggleMute:function(){
+				if (!$scope.player.mute)
+					$scope.player.muteVideo();
+				if ($scope.player.mute)
+					$scope.player.unMuteVideo();
 
-			$scope.player.mute = !$scope.player.mute;
-		}
-	};
+				$scope.player.mute = !$scope.player.mute;
+			}
+		};
+	}
 
-	$scope.play = function (){
+	$scope.run = function (){
+		if (!$scope.player)
+			initPlayer();
+
 		index = 0;
 		$scope.player.active = true;
-		$scope.playlistIndex = 0;
 
 		var songs = [
 			['Evil Twin', 'Arctic Monkeys'],
@@ -236,7 +238,6 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 			}
 		});
 	};
-	$scope.getLineup();
 }]);
 
 setListApp.directive('youtube', ['youtubePlayer', function (YtPlayerApi) {
