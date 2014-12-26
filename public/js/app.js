@@ -13,7 +13,7 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 	$scope.festivalName = null;
 	$scope.festivalYear = null;
 	$scope.festivalName = 'rockwerchter';
-	$scope.festivalYear = '2014';
+	$scope.festivalYear = '2015';
 
 	function initPlayer (){
 		$scope.currentPlaylist = [];
@@ -150,17 +150,11 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 	};
 
 	function getArtists(festivalName, year, callback) {
-		var lineupUrl = 'http://whateverorigin.org/get?url=http%3A//efestivals.co.uk/festivals/'+ festivalName + '/'+year+'/lineup.shtml&callback=JSON_CALLBACK';
-		// var lineupUrl = 'http://allow-any-origin.appspot.com/http://efestivals.co.uk/festivals/'+ festivalName + '/'+year+'/lineup.shtml&callback=JSON_CALLBACK';
-		console.log(lineupUrl);
-		$http.get(lineupUrl).success(function (data) {
+		$http.get('/getLineup/'+festivalName+'/'+year).success(function (data) {			
 			var pattern=/Tiny.*?1\">\(C\)<\/span> (.*?)<\/a>/ig;
 
 			var artists = [];
-
-			var contents = data.contents;
-
-			while (match = pattern.exec(contents)) {
+			while (match = pattern.exec(data)) {
 				artists.push(match[1].replace('<span class="lu_new1">', '')
 									.replace('<span class="lu_new5">', '')
 									.replace('</span>', ''));
@@ -171,20 +165,19 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 
 	function getSongs (artist, pageNumber, callback) {
 		var songList = [],
-			setListURL = 'http://whateverorigin.org/get?url=http://api.setlist.fm/rest/0.1/search/setlists.json%3FartistName%3D'+artist.name+'%26p%3D'+pageNumber+'&callback=JSON_CALLBACK';
-		$http.jsonp(setListURL).success( function (data){
-			console.log(data);
-			if (!data.contents.setlists)
+			setListURL = '/getSetlist/'+artist.name+'/'+pageNumber;
+		$http.get(setListURL).success( function (data){
+			if (!data)
 			{
 				callback([]);
 				return;
 			}
 
-			var setlists = data.contents.setlists.setlist;
-
+			var setlists = data.setlists.setlist;
 			for (var set in setlists){
 				if (setlists[set].sets){
 					if (setlists[set].sets.set.song){
+						console.log(setlists[set].sets.set.song)
 						for (var song in setlists[set].sets.set.song){
 							var songName = setlists[set].sets.set.song[song]['@name'];
 							if (songName)
@@ -238,6 +231,7 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 			}
 		});
 	};
+	$scope.getLineup();
 }]);
 
 setListApp.directive('youtube', ['youtubePlayer', function (YtPlayerApi) {
