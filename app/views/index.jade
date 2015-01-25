@@ -9,42 +9,41 @@ block content
 			ul.nav.navbar-nav
 				li.active
 					a(data-toggle="modal", data-target="#searchFestivalModal") Search for Festival
-		.container
-			ul.list-group.col-lg-3(ng-if="festivalName")
-				a.list-group-item.active {{festivalName}} - {{festivalYear}}
-					span.badge(ng-model="lineup.length")  {{lineup.length}}
-				a.list-group-item
-					input(type="search", required, placeholder="serach", ng-model='artistSearchFilter').form-control
-				div(style='max-height:90vh;overflow-y:scroll')
-					a.list-group-item(ng-repeat="artist in lineup | filter:artistSearchFilter",
-									  ng-click="showSetList(artist)"
-									  ng-class="{active : selectedArtist.name == artist.name}")
-						|	{{artist.name}}
-						span.glyphicon.glyphicon-headphones.pull-right(ng-click='run(selectedArtist.name)')
+		ul.list-group.col-lg-3(ng-if="festivalName")
+			a.list-group-item.active {{festivalName}} - {{festivalYear}}
+				span.badge(ng-model="lineup.length")  {{lineup.length}}
+			a.list-group-item
+				input(type="search", required, placeholder="serach", ng-model='artistSearchFilter').form-control
+			div(style='max-height:90vh;overflow-y:scroll')
+				a.list-group-item(ng-repeat="artist in lineup | filter:artistSearchFilter",
+								  ng-click="showSetList(artist)"
+								  ng-class="{active : selectedArtist.name == artist.name}")
+					|	{{artist.name}}
+					span.glyphicon.glyphicon-headphones.pull-right(ng-click='run(selectedArtist.name)')
 
-			.col-lg-5
-				.panel.panel-info(ng-show="selectedArtist")
-					.panel-heading
-						h3(ng-if="!selectedArtist.topSongs").panel-title {{selectedArtist.name}}
-						h3(ng-if="selectedArtist.topSongs").panel-title
-						|	{{selectedArtist.name}} - {{selectedArtist.topSongs.length}} Songs!
-						a.btn.btn-default.pull-right
-							span.glyphicon.glyphicon-headphones
+		.col-lg-5
+			.panel.panel-info(ng-show="selectedArtist")
+				.panel-heading
+					h3(ng-if="!selectedArtist.topSongs").panel-title {{selectedArtist.name}}
+					h3(ng-if="selectedArtist.topSongs").panel-title
+					|	{{selectedArtist.name}} - {{selectedArtist.topSongs.length}} Songs!
+					a.btn.btn-default.pull-right
+						span.glyphicon.glyphicon-headphones
 
-					.panel-body
-						ul.list-group(ng-if="selectedArtist.topSongs", style='max-height:90vh;overflow-y:scroll')
-							a.list-group-item
-								input(type="search", required, placeholder="serach", ng-model='songSearchFilter').form-control
-							li.list-group-item(ng-repeat="song in selectedArtist.topSongs | orderBy:'timesPlayed':true | limitTo: 15",
-								ng-click="run(selectedArtist.name, song.name)")
-								a
-									span.glyphicon.glyphicon-headphones
-									|	{{song.name}}
-								span.badge.active.pull-right   {{song.timesPlayed}}
+				.panel-body
+					ul.list-group(ng-if="selectedArtist.topSongs", style='max-height:90vh;overflow-y:scroll')
+						a.list-group-item
+							input(type="search", required, placeholder="serach", ng-model='songSearchFilter').form-control
+						li.list-group-item(ng-repeat="song in selectedArtist.topSongs | orderBy:'timesPlayed':true | limitTo: 15",
+							ng-click="run(selectedArtist.name, song.name)")
+							a
+								span.glyphicon.glyphicon-headphones
+								|	{{song.name}}
+							span.badge.active.pull-right   {{song.timesPlayed}}
 
-			.col-lg-4
-				//- button(type='button', ng-click="run()").btn.btn-default button
-				youtube#youtubePlayer(max-height="50px", autoplay="{{player.autoplay}}")
+		.col-lg-4
+			//- button(type='button', ng-click="run()").btn.btn-default button
+			youtube#youtubePlayer(max-height="50px", autoplay="{{player.autoplay}}")
 
 			//- for debugging purposees
 			//-
