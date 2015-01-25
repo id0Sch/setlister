@@ -3,11 +3,11 @@ var express = require('express'),
   fs = require('fs'),
   config = require('./config/config');
 
-mongoose.connect(config.db);
-var db = mongoose.connection;
-db.on('error', function () {
-  throw new Error('unable to connect to database at ' + config.db);
-});
+// mongoose.connect(config.db);
+// var db = mongoose.connection;
+// db.on('error', function () {
+  // throw new Error('unable to connect to database at ' + config.db);
+// });
 
 var modelsPath = __dirname + '/app/models';
 fs.readdirSync(modelsPath).forEach(function (file) {
@@ -22,3 +22,4 @@ require('./config/express')(app, config);
 require('./config/routes')(app);
 
 app.listen(config.port);
+console.log('server listening on port %d', config.port)

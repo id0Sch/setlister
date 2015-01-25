@@ -21,12 +21,12 @@ angular.module('youtube.api.services',[]).run(['$rootScope','$window',function($
 		'autoplay': 0,
 		'html5': 1,
 		'controls': true,
-		'height':390,
+		'height':590,
 		'width':640,
 		'listType':null,
 		'playlist':[],
 		'playlistIndex':0,
-		'setShuffle':null,
+		'setShuffle':true,
 		'state':null,
 		'mute':false,
 
@@ -64,6 +64,10 @@ angular.module('youtube.api.services',[]).run(['$rootScope','$window',function($
 				playerConfig.events.onReady=callback;
 			}
 			this.playerObj = new YT.Player(this.playerId, playerConfig);
+		},
+		addVideos : function (playlist){
+			this.playlist = this.playlist.concat(playlist);
+			this.playerObj.cuePlaylist({playlist:this.playlist});
 		},
 		muteVideo: function() {
 			this.playerObj.mute();

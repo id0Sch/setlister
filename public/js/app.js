@@ -1,6 +1,6 @@
 var setListApp = angular.module('setListApp', ['ui.bootstrap', 'youtube.api.services']);
 
-setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePlayer', function($scope, $http, $location, ytplayer) {
+setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePlayer','$q', function ($scope, $http, $location, ytplayer, $q) {
 
 	String.prototype.capitalize = function() {
 		return this.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
@@ -18,7 +18,7 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 	function initPlayer (){
 		$scope.currentPlaylist = [];
 		$scope.player = ytplayer;
-		$scope.player.autoplay = '1';
+		$scope.player.autoplay = '0';
 		$scope.player.state = Boolean(parseInt($scope.player.autoplay,10));
 		var index = 0;
 		$scope.player.commands = {
@@ -60,51 +60,59 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 		};
 	}
 
-	$scope.run = function (){
+	$scope.run = function (artist, songName){
 		if (!$scope.player)
 			initPlayer();
-
-		index = 0;
-		$scope.player.active = true;
-
-		var songs = [
-			['Evil Twin', 'Arctic Monkeys'],
-			['R U Mine?', 'Arctic Monkeys '],
-			['RATHER BE','CLEAN BANDIT FT JESS GLYNNE'],
-			['STAY THE NIGHT','ZEDD FT HAYLEY WILLIAMS'],
-			['HAPPY','PHARRELL WILLIAMS']
-		];
-		getPlaylistIds(songs, function (currentPlaylistIds){
-			$scope.player.setPlayList(currentPlaylistIds);
-			$scope.player.loadPlayer();
-		});
+		if (!$scope.player.active){
+			index = 0;
+			$scope.player.active = true;
+			var songs = [[songName, artist.toUpperCase()]]
+			getPlaylistIds(songs)
+			.then(function (currentPlaylistIds){
+				$scope.player.setPlayList(currentPlaylistIds);
+				$scope.player.loadPlayer();
+			});
+		}
+	 	else{
+	 		var songs = [[songName, artist.toUpperCase()]]
+			getPlaylistIds(songs)
+			.then(function (currentPlaylistIds){
+				$scope.player.addVideos(currentPlaylistIds);
+				// $scope.player.loadPlayer();
+			});
+	 	}
 	}
 
-	function getPlaylistIds (songs, callback){
+	function getPlaylistIds (songs){
+		var deffered = $q.defer()
 		var currentPlaylistIds = [];
 		for (var song in songs){
-			getYoutubeSong(songs[song][0], songs[song][1] ,function (youtubeSong){
+			getYoutubeSong(songs[song][0], songs[song][1])
+			.then(function (youtubeSong){
 				$scope.currentPlaylist.push(youtubeSong);
 				currentPlaylistIds.push(youtubeSong.id);
 				if (currentPlaylistIds.length === songs.length)
-					callback(currentPlaylistIds);
+					return deffered.resolve(currentPlaylistIds)
 			});
 		}
+		return deffered.promise
 	}
 
-	function getYoutubeSong (songName, artistName, callback) {
+	function getYoutubeSong (songName, artistName) {
+		var deffered = $q.defer()
 		var	youtubeQuery = 'http://gdata.youtube.com/feeds/api/videos?q=%22'+ encodeURIComponent(artistName +' '+songName) +'%22&orderby=viewCount&alt=json&max-results=1&format=5&callback=JSON_CALLBACK';
-		$http.jsonp(youtubeQuery).success( function (data){
+		$http.jsonp(youtubeQuery)
+		.success(function (data){
 			var songIndex = parseInt(index,10);
 			index++;
-
 			if (!data.feed.entry){
-				callback({name:songName, artist:artistName, id :null, index:songIndex});
+				return deffered.resolve({name:songName, artist:artistName, id :null, index:songIndex});
 			}
 			var songId = data.feed.entry[0].id.$t.split('/').reverse()[0];
 
-			callback( {name:songName, artist:artistName, id : songId, index:songIndex});
+			return deffered.resolve( {name:songName, artist:artistName, id : songId, index:songIndex});
 		});
+		return deffered.promise
 	}
 
 	function getTopSongs (songList) {
@@ -146,11 +154,12 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 						name: artists[i]
 					});
 				}
+				$scope.showSetList($scope.lineup[0])
 			});
 	};
 
 	function getArtists(festivalName, year, callback) {
-		$http.get('/getLineup/'+festivalName+'/'+year).success(function (data) {			
+		$http.get('/getLineup/'+festivalName+'/'+year).success(function (data) {
 			var pattern=/Tiny.*?1\">\(C\)<\/span> (.*?)<\/a>/ig;
 
 			var artists = [];
@@ -177,7 +186,7 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePl
 			for (var set in setlists){
 				if (setlists[set].sets){
 					if (setlists[set].sets.set.song){
-						console.log(setlists[set].sets.set.song)
+						// console.log(setlists[set].sets.set.song)
 						for (var song in setlists[set].sets.set.song){
 							var songName = setlists[set].sets.set.song[song]['@name'];
 							if (songName)
