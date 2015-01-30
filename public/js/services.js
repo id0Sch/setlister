@@ -74,7 +74,6 @@ setListApp.service('VideosService', ['$window', '$rootScope', '$log', function (
 	}
 	playNextVideo = function (){
 		var nextVideoIndex = !youtube.shuffle ? 0 : Math.floor(Math.random()*upcoming.length);
-		console.log(youtube.shuffle,nextVideoIndex)
 		service.archiveVideo(youtube.videoId, youtube.title);
 		service.launchPlayer(upcoming[nextVideoIndex].id, upcoming[nextVideoIndex].title);
 		service.deleteVideo(upcoming, upcoming[nextVideoIndex].id);

@@ -32,14 +32,16 @@ block content
 					ul.list-group(ng-if="selectedArtist.topSongs", style='max-height:80vh;overflow-y:scroll')
 						a.list-group-item
 							input(type="search", required, placeholder="serach", ng-model='songSearchFilter').form-control
-						li.list-group-item(ng-repeat="song in selectedArtist.topSongs | orderBy:'played':true | limitTo: 15",
+						a.list-group-item(ng-repeat="song in selectedArtist.topSongs | orderBy:'played':true | limitTo: 15",
 							ng-click="queue(song.youtubeID, song.artist + ' - ' + song.name)")
-							a {{song.name}}
+							{{song.name}}
 							button.btn.btn-default.btn-xs.pull-right(ng-click="launch(song.youtubeID,song.artist + ' - ' + song.name)")
 								span.glyphicon.glyphicon-play
+							button.btn.btn-default.btn-xs.pull-right(ng-click="queue(song.youtubeID, song.artist + ' - ' + song.name)")
+								span.glyphicon.glyphicon-plus
 							span.badge.active.pull-right   {{song.played}}
 
-		.col-lg-5.well.well-lg
+		.col-lg-5.well.well-sm
 			.panel.panel-default
 				.text-center(style='background-color:black')
 					#placeholder

@@ -26,6 +26,7 @@ module.exports = function(app){
 				var artist = match[1].replace('<span class="lu_new1">', '')
 									.replace('<span class="lu_new5">', '')
 									.replace('</span>', '')
+									.replace('(live)','')
 				lineup.push({name : artist});
 			}
 			return deffered.resolve(lineup);
@@ -56,23 +57,23 @@ module.exports = function(app){
 					}
 					else {
 						if (set.sets.set){
-							set.sets.set.forEach(function (subSet){
+							for (var i in set.sets.set){
+								var subSet = set.sets.set[i]
 								if (subSet.song){
 									if (subSet.song['@name']){
 										var songName = subSet.song['@name'];
 										songList.push(songName);
 									}
 									else {
-										subSet.song.forEach(function (song){
-											var songName = song['@name'];
+										for (var j in subSet.song){
+											var songName = subSet.song[j]['@name'];
 											if (songName){
 												songList.push(songName);
-												// console.log('1',songList.length)
 											}
-										})
+										}
 									}
 								}
-							})
+							}
 						}
 					}
 				}
@@ -80,7 +81,8 @@ module.exports = function(app){
 			return deffered.resolve(songList)
 		})
 		.catch(function (err){
-			throw err
+			console.log(err)
+			return deffered.reject(err)
 		})
 		return deffered.promise;
 
@@ -112,6 +114,7 @@ module.exports = function(app){
 			return deffered.resolve({name : artistName, songs : data})
 		})
 		.catch(function (err){
+			console.log(err)
 			throw err
 		})
 		return deffered.promise;
@@ -165,6 +168,7 @@ module.exports = function(app){
 			return res.send(songs)
 		})
 		.catch(function (err){
+			console.log(err)
 			throw err
 		})
 	})
