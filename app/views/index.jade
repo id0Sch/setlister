@@ -33,9 +33,9 @@ block content
 						a.list-group-item
 							input(type="search", required, placeholder="serach", ng-model='songSearchFilter').form-control
 						li.list-group-item(ng-repeat="song in selectedArtist.topSongs | orderBy:'played':true | limitTo: 15",
-							ng-click="queue(song)")
+							ng-click="queue(song.youtubeID, song.artist + ' - ' + song.name)")
 							a {{song.name}}
-							button.btn.btn-default.btn-xs.pull-right(ng-click="launch(song.youtubeID,song.title)")
+							button.btn.btn-default.btn-xs.pull-right(ng-click="launch(song.youtubeID,song.artist + ' - ' + song.name)")
 								span.glyphicon.glyphicon-play
 							span.badge.active.pull-right   {{song.played}}
 
@@ -46,7 +46,7 @@ block content
 				ul.list-group
 					li.list-group-item.text-center
 						.btn-group.btn-group-sm
-							//- button.btn.btn-default.glyphicon.glyphicon-step-backward(ng-click="youtube.previousVideo()")
+							//- button.btn.btn-default.glyphicon.glyphicon-remove(ng-click="youtube.removeList()")
 							button.btn.btn-default.glyphicon(ng-click="youtube.togglePlayPause()",
 										   ng-class='youtube.state == "playing" ? "glyphicon-pause" : "glyphicon-play"')
 							button.btn.btn-default.glyphicon.glyphicon-step-forward(ng-click="youtube.nextVideo()")
@@ -59,6 +59,8 @@ block content
 									span.glyphicon.glyphicon-play
 								button.btn.btn-default.btn-xs(ng-click="delete(song.id)")
 									span.glyphicon.glyphicon-remove
+								button.btn.btn-default.btn-xs
+									span.glyphicon.glyphicon-arrow-up(ng-click="youtube.playNext(song.id, song.title)")
 							{{song.title}}
 		//- nav(role="navigation").navbar.navbar-default.navbar-fixed-bottom
 			//- #placeholder(style="display:none;")

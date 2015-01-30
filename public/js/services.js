@@ -33,6 +33,13 @@ setListApp.service('VideosService', ['$window', '$rootScope', '$log', function (
 		},
 		toggleShuffle : function (){
 			this.shuffle = !this.shuffle;
+		},
+		playNext : function (id, title){
+			service.deleteVideo(upcoming, id)
+			upcoming.unshift({
+				id: id,
+				title: title
+			});
 		}
 	};
 	var results = [];

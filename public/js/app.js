@@ -27,25 +27,18 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'VideosSer
 		$scope.playlist = true;
 	}
 
-	$scope.launch = function (song) {
-		var id = song.youtubeID;
-		var title = song.artist + ' - ' + song.name;
-
+	$scope.launch = function (id, title) {
 		VideosService.launchPlayer(id, title);
 		VideosService.archiveVideo(id, title);
 		VideosService.deleteVideo($scope.upcoming, id);
 	};
 
-	$scope.queue = function (song) {
-		var id = song.youtubeID;
-		var title = song.artist + ' - ' + song.name;
+	$scope.queue = function (id, title) {
 		VideosService.queueVideo(id, title);
 		VideosService.deleteVideo($scope.history, id);
     };
-	$scope.delete = function (song) {
-		var id = song.youtubeID;
-		var title = song.artist + ' - ' + song.name;
-  		VideosService.deleteVideo(list, id);
+	$scope.delete = function (id) {
+  		VideosService.deleteVideo($scope.upcoming, id);
 	};
 
 
@@ -82,7 +75,8 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'VideosSer
 		.then(function (songs){
 			$scope.selectedArtist.topSongs = songs;
 			for (song in $scope.selectedArtist.topSongs){
-				$scope.queue($scope.selectedArtist.topSongs[song])
+				var song = $scope.selectedArtist.topSongs[song]
+				$scope.queue(song.youtubeID, song.artist + ' - ' + song.name)
 			}
 		})
 	}
