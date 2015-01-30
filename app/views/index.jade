@@ -9,67 +9,79 @@ block content
 			ul.nav.navbar-nav
 				li.active
 					a(data-toggle="modal", data-target="#searchFestivalModal") Search for Festival
-		ul.list-group.col-lg-3(ng-if="festivalName")
+
+		ul.list-group.col-lg-2(ng-if="festivalName")
 			a.list-group-item.active {{festivalName}} - {{festivalYear}}
 				span.badge(ng-model="lineup.length")  {{lineup.length}}
 			a.list-group-item
 				input(type="search", required, placeholder="serach", ng-model='artistSearchFilter').form-control
-			div(style='max-height:90vh;overflow-y:scroll')
+			div(style='max-height:80vh;overflow-y:scroll')
 				a.list-group-item(ng-repeat="artist in lineup | filter:artistSearchFilter",
 								  ng-click="showSetList(artist)"
 								  ng-class="{active : selectedArtist.name == artist.name}")
 					|	{{artist.name}}
-					span.glyphicon.glyphicon-headphones.pull-right(ng-click='run(selectedArtist.name)')
+					//- span.glyphicon.glyphicon-headphones.pull-right(ng-click='run(selectedArtist.name)')
 
-		.col-lg-5
+		.col-lg-3
 			.panel.panel-info(ng-show="selectedArtist")
 				.panel-heading
 					h3(ng-if="!selectedArtist.topSongs").panel-title {{selectedArtist.name}}
 					h3(ng-if="selectedArtist.topSongs").panel-title
 					|	{{selectedArtist.name}} - {{selectedArtist.topSongs.length}} Songs!
-					a.btn.btn-default.pull-right
-						span.glyphicon.glyphicon-headphones
-
 				.panel-body
-					ul.list-group(ng-if="selectedArtist.topSongs", style='max-height:90vh;overflow-y:scroll')
+					ul.list-group(ng-if="selectedArtist.topSongs", style='max-height:80vh;overflow-y:scroll')
 						a.list-group-item
 							input(type="search", required, placeholder="serach", ng-model='songSearchFilter').form-control
-						li.list-group-item(ng-repeat="song in selectedArtist.topSongs | orderBy:'timesPlayed':true | limitTo: 15",
-							ng-click="run(selectedArtist.name, song.name)")
-							a
-								span.glyphicon.glyphicon-headphones
-								|	{{song.name}}
-							span.badge.active.pull-right   {{song.timesPlayed}}
+						li.list-group-item(ng-repeat="song in selectedArtist.topSongs | orderBy:'played':true | limitTo: 15",
+							ng-click="queue(song)")
+							a {{song.name}}
+							button.btn.btn-default.btn-xs.pull-right(ng-click="launch(song.youtubeID,song.title)")
+								span.glyphicon.glyphicon-play
+							span.badge.active.pull-right   {{song.played}}
 
-		.col-lg-4
-			//- button(type='button', ng-click="run()").btn.btn-default button
-			youtube#youtubePlayer(max-height="50px", autoplay="{{player.autoplay}}")
+		.col-lg-5.well.well-lg
+			.panel.panel-default
+				.text-center(style='background-color:black')
+					#placeholder
+				ul.list-group
+					li.list-group-item.text-center
+						.btn-group.btn-group-sm
+							//- button.btn.btn-default.glyphicon.glyphicon-step-backward(ng-click="youtube.previousVideo()")
+							button.btn.btn-default.glyphicon(ng-click="youtube.togglePlayPause()",
+										   ng-class='youtube.state == "playing" ? "glyphicon-pause" : "glyphicon-play"')
+							button.btn.btn-default.glyphicon.glyphicon-step-forward(ng-click="youtube.nextVideo()")
+							button.btn.glyphicon.glyphicon-random(ng-click="youtube.toggleShuffle()", ng-class="youtube.shuffle ? 'btn-success' : 'btn-default'")
+					li.list-group-item.active Currently Playing: {{youtube.videoTitle}}
+					div(style='max-height:35vh;overflow-y:scroll')
+						a.list-group-item(ng-repeat="song in upcoming")
+							.btn-group.btn-group-xs.pull-right
+								button.btn.btn-default.btn-xs(ng-click="launch(song.id,song.title)")
+									span.glyphicon.glyphicon-play
+								button.btn.btn-default.btn-xs(ng-click="delete(song.id)")
+									span.glyphicon.glyphicon-remove
+							{{song.title}}
+		//- nav(role="navigation").navbar.navbar-default.navbar-fixed-bottom
+			//- #placeholder(style="display:none;")
+			//- youtube#youtubePlayer(style="display:none;", autoplay="{{player.autoplay}}")
+			ul.navbar-brand: span.glyphicon.glyphicon-step-backward(ng-click="player.commands.previous()")
+			ul.navbar-brand: span.glyphicon(ng-click="player.commands.togglePlayPause()",
+											ng-class='{"glyphicon-pause": player.state, "glyphicon-play" : !player.state}')
+			ul.navbar-brand: span.glyphicon.glyphicon-step-forward(ng-click="player.commands.next()")
+			ul.navbar-brand {{youtube.player.mute}}
+				span.glyphicon.glyphicon-volume-off(ng-if="!youtube.player.mute", ng-click="youtube.player.mute()")
+				span.glyphicon.glyphicon-volume-up(ng-if="youtube.player.mute", ng-click="youtube.player.unMute()")
+			ul.nav.navbar-nav
+				li.active: a {{currentPlaylist[player.playlistIndex].artist}} - {{currentPlaylist[player.playlistIndex].name}}
 
-			//- for debugging purposees
-			//-
-
-			//- nav(collapse='!player.active', role="navigation").navbar.navbar-default.navbar-fixed-bottom
-				//- youtube#youtubePlayer(style="display:none;", autoplay="{{player.autoplay}}")
-				ul.navbar-brand: span.glyphicon.glyphicon-step-backward(ng-click="player.commands.previous()")
-				ul.navbar-brand: span.glyphicon(ng-click="player.commands.togglePlayPause()",
-												ng-class='{"glyphicon-pause": player.state, "glyphicon-play" : !player.state}')
-				ul.navbar-brand: span.glyphicon.glyphicon-step-forward(ng-click="player.commands.next()")
-				ul.navbar-brand: span.glyphicon(ng-click="player.commands.toggleMute()",
-												ng-class="{'glyphicon-volume-off': player.mute, 'glyphicon-volume-up': !player.mute}")
-				ul.nav.navbar-nav
-					li.active: a {{currentPlaylist[player.playlistIndex].artist}} - {{currentPlaylist[player.playlistIndex].name}}
-
-				.pull-right
-					ul.navbar-brand
-						span {{player.playlistIndex+1}} \ {{currentPlaylist.length}}
-					ul.navbar-brand.dropdown
-						a(href="#", data-toggle="dropdown").dropdown-toggle
-							span.glyphicon.glyphicon-list
-						ul.dropdown-menu.dropup.pull-right(style='max-height:500px;overflow-y:scroll')
-							li(ng-repeat="song in currentPlaylist | orderBy:'song.index'",
-								ng-class='{active: player.playlistIndex == song.index}',
-								ng-click='player.commands.jumpTo(song.index)')
-								a {{song.artist}} - {{song.name}}
+			.pull-right
+				ul.navbar-brand.dropdown
+					a(href="#", data-toggle="dropdown").dropdown-toggle
+						span.glyphicon.glyphicon-list
+					ul.dropdown-menu.dropup.pull-right(style='max-height:500px;overflow-y:scroll')
+						li(ng-repeat="song in upcoming",
+							ng-class='{active: player.videoId == song.id}',
+							ng-click='player.commands.jumpTo(song.index)')
+							a {{song.title}}
 
 
 		#searchFestivalModal.modal.fade

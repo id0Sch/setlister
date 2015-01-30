@@ -1,261 +1,90 @@
-var setListApp = angular.module('setListApp', ['ui.bootstrap', 'youtube.api.services']);
+var setListApp = angular.module('setListApp', ['ui.bootstrap']);
+setListApp.run(function () {
+	var tag = document.createElement('script');
+	tag.src = "http://www.youtube.com/iframe_api";
+	var firstScriptTag = document.getElementsByTagName('script')[0];
+	firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+});
 
-setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'youtubePlayer','$q', function ($scope, $http, $location, ytplayer, $q) {
-
-	String.prototype.capitalize = function() {
-		return this.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
-	};
+setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'VideosService','$q', function ($scope, $http, $location, VideosService, $q) {
 
 	$scope.lineup = [];
 
 	$scope.selectedArtist = null;
-	$scope.player = null;
 	$scope.festivalName = null;
 	$scope.festivalYear = null;
 	$scope.festivalName = 'rockwerchter';
 	$scope.festivalYear = '2015';
 
-	function initPlayer (){
-		$scope.currentPlaylist = [];
-		$scope.player = ytplayer;
-		$scope.player.autoplay = '0';
-		$scope.player.state = Boolean(parseInt($scope.player.autoplay,10));
-		var index = 0;
-		$scope.player.commands = {
-			togglePlayPause:function(){
-				if (!$scope.player.state)
-					$scope.player.playVideo();
-				else
-					$scope.player.pauseVideo();
-				$scope.player.state = !$scope.player.state;
-			},
-			jumpTo:function(index){
-				$scope.player.playlistIndex = index;
-				$scope.player.jumpTo(index);
-				if (!$scope.player.state)
-					$scope.player.state = !$scope.player.state;
-			},
-			next:function(){
-				if ($scope.currentPlaylist.length-1 === $scope.player.playlistIndex)
-					return;
-				$scope.player.playlistIndex ++ ;
-				$scope.player.nextVideo();
-			},
-			previous:function(){
-				if ($scope.player.playlistIndex > 0 )
-					$scope.player.playlistIndex -- ;
-				$scope.player.previousVideo();
-			},
-			rePlay:function(){
-				$scope.player.seekTo(0);
-			},
-			toggleMute:function(){
-				if (!$scope.player.mute)
-					$scope.player.muteVideo();
-				if ($scope.player.mute)
-					$scope.player.unMuteVideo();
 
-				$scope.player.mute = !$scope.player.mute;
-			}
-		};
+	init();
+
+	function init() {
+		$scope.youtube = VideosService.getYoutube();
+		$scope.results = VideosService.getResults();
+		$scope.upcoming = VideosService.getUpcoming();
+		$scope.history = VideosService.getHistory();
+		$scope.playlist = true;
 	}
 
-	$scope.run = function (artist, songName){
-		if (!$scope.player)
-			initPlayer();
-		if (!$scope.player.active){
-			index = 0;
-			$scope.player.active = true;
-			var songs = [[songName, artist.toUpperCase()]]
-			getPlaylistIds(songs)
-			.then(function (currentPlaylistIds){
-				$scope.player.setPlayList(currentPlaylistIds);
-				$scope.player.loadPlayer();
-			});
-		}
-	 	else{
-	 		var songs = [[songName, artist.toUpperCase()]]
-			getPlaylistIds(songs)
-			.then(function (currentPlaylistIds){
-				$scope.player.addVideos(currentPlaylistIds);
-				// $scope.player.loadPlayer();
-			});
-	 	}
-	}
+	$scope.launch = function (song) {
+		var id = song.youtubeID;
+		var title = song.artist + ' - ' + song.name;
 
-	function getPlaylistIds (songs){
-		var deffered = $q.defer()
-		var currentPlaylistIds = [];
-		for (var song in songs){
-			getYoutubeSong(songs[song][0], songs[song][1])
-			.then(function (youtubeSong){
-				$scope.currentPlaylist.push(youtubeSong);
-				currentPlaylistIds.push(youtubeSong.id);
-				if (currentPlaylistIds.length === songs.length)
-					return deffered.resolve(currentPlaylistIds)
-			});
-		}
-		return deffered.promise
-	}
+		VideosService.launchPlayer(id, title);
+		VideosService.archiveVideo(id, title);
+		VideosService.deleteVideo($scope.upcoming, id);
+	};
 
-	function getYoutubeSong (songName, artistName) {
-		var deffered = $q.defer()
-		var	youtubeQuery = 'http://gdata.youtube.com/feeds/api/videos?q=%22'+ encodeURIComponent(artistName +' '+songName) +'%22&orderby=viewCount&alt=json&max-results=1&format=5&callback=JSON_CALLBACK';
-		$http.jsonp(youtubeQuery)
-		.success(function (data){
-			var songIndex = parseInt(index,10);
-			index++;
-			if (!data.feed.entry){
-				return deffered.resolve({name:songName, artist:artistName, id :null, index:songIndex});
-			}
-			var songId = data.feed.entry[0].id.$t.split('/').reverse()[0];
+	$scope.queue = function (song) {
+		var id = song.youtubeID;
+		var title = song.artist + ' - ' + song.name;
+		VideosService.queueVideo(id, title);
+		VideosService.deleteVideo($scope.history, id);
+    };
+	$scope.delete = function (song) {
+		var id = song.youtubeID;
+		var title = song.artist + ' - ' + song.name;
+  		VideosService.deleteVideo(list, id);
+	};
 
-			return deffered.resolve( {name:songName, artist:artistName, id : songId, index:songIndex});
-		});
-		return deffered.promise
-	}
-
-	function getTopSongs (songList) {
-		var topSongs = {};
-
-		for (var i in songList) {
-			var song = songList[i];
-
-			if (!topSongs[song])
-				topSongs[song] = {
-					name: song,
-					timesPlayed: 0
-				};
-
-			++topSongs[song].timesPlayed;
-		}
-
-		var topSongsArray = [];
-
-		for (var currentSong in topSongs) {
-			topSongsArray.push({
-				timesPlayed: topSongs[currentSong].timesPlayed,
-				name: currentSong
-			});
-		}
-
-		return topSongsArray;
-	}
 
 	$scope.getLineup = function (){
 		$scope.lineup = [];
-		getArtists($scope.festivalName, $scope.festivalYear, function (err, artists) {
-				if (err)
-					return console.error(err);
-
-				for(var i in artists)
-				{
-					$scope.lineup.push({
-						name: artists[i]
-					});
-				}
-				$scope.showSetList($scope.lineup[0])
-			});
+		$http.get('/getLineup/'+$scope.festivalName+'/'+$scope.festivalYear)
+		.success(function (data) {
+			$scope.lineup = data;
+			$scope.showSetList($scope.lineup[0])
+		})
 	};
-
-	function getArtists(festivalName, year, callback) {
-		$http.get('/getLineup/'+festivalName+'/'+year).success(function (data) {
-			var pattern=/Tiny.*?1\">\(C\)<\/span> (.*?)<\/a>/ig;
-
-			var artists = [];
-			while (match = pattern.exec(data)) {
-				artists.push(match[1].replace('<span class="lu_new1">', '')
-									.replace('<span class="lu_new5">', '')
-									.replace('</span>', ''));
-			}
-			callback(null, artists);
+	function getSongs (artist) {
+		var deffered = $q.defer();
+		$http.get('/getSetlist/'+artist.name)
+		.success( function (data){
+			return deffered.resolve(data.songs);
 		});
-	}
-
-	function getSongs (artist, pageNumber, callback) {
-		var songList = [],
-			setListURL = '/getSetlist/'+artist.name+'/'+pageNumber;
-		$http.get(setListURL).success( function (data){
-			if (!data)
-			{
-				callback([]);
-				return;
-			}
-
-			var setlists = data.setlists.setlist;
-			for (var set in setlists){
-				if (setlists[set].sets){
-					if (setlists[set].sets.set.song){
-						// console.log(setlists[set].sets.set.song)
-						for (var song in setlists[set].sets.set.song){
-							var songName = setlists[set].sets.set.song[song]['@name'];
-							if (songName)
-								songList.push(songName.capitalize());
-						}
-					}
-					else {
-						for(var sub_set in setlists[set].sets.set){
-							for (song in setlists[set].sets.set[sub_set].song){
-								songName = setlists[set].sets.set[sub_set].song[song]['@name'];
-								if (songName)
-									songList.push(songName.capitalize());
-							}
-						}
-					}
-				}
-			}
-			callback(songList);
-		});
+		return deffered.promise
 	}
 
 	$scope.showSetList = function (artist){
-		var pageNumber = 1;
-
-		if ($scope.selectedArtist !== null && $scope.selectedArtist.name === artist.name)
-		{
+		if ($scope.selectedArtist && $scope.selectedArtist.name === artist.name){
 			$scope.selectedArtist = null;
 			return;
 		}
 
 		$scope.selectedArtist = artist;
 
-		if ($scope.selectedArtist.topSongs)
-		{
+		if ($scope.selectedArtist.topSongs){
 			return;
 		}
 
-		$scope.selectedArtist.topSongs = null;
-
-		getSongs(artist, pageNumber, function (songList){
-			if (songList.length > 0)
-				$scope.selectedArtist.topSongs = getTopSongs(songList);
-			else{
-				pageNumber++;
-				getSongs(artist, pageNumber, function (songListII){
-					if (songListII.length > 0)
-						$scope.selectedArtist.topSongs = getTopSongs(songListII);
-					else
-						$scope.selectedArtist.topSongs = false;
-				});
+		getSongs(artist)
+		.then(function (songs){
+			$scope.selectedArtist.topSongs = songs;
+			for (song in $scope.selectedArtist.topSongs){
+				$scope.queue($scope.selectedArtist.topSongs[song])
 			}
-		});
-	};
+		})
+	}
 	$scope.getLineup();
-}]);
-
-setListApp.directive('youtube', ['youtubePlayer', function (YtPlayerApi) {
-	return {
-		restrict:'E',
-		link:function (scope,element,attrs) {
-			YtPlayerApi.setPlayerId(attrs.id);
-			var player_vars={};
-			var allowed_vars=['autoplay','controls','html5'];
-			for (var idx in allowed_vars) {
-				if (allowed_vars[idx] in attrs) {
-					player_vars[allowed_vars[idx]]=attrs[allowed_vars[idx]];
-				}
-			}
-			YtPlayerApi.setPlayerVars(player_vars);
-		}
-	};
 }]);
