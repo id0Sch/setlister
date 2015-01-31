@@ -54,7 +54,7 @@ block content
 										   ng-class='youtube.state == "playing" ? "glyphicon-pause" : "glyphicon-play"')
 							button.btn.btn-default.glyphicon.glyphicon-step-forward(ng-click="youtube.nextVideo()")
 							button.btn.glyphicon.glyphicon-random(ng-click="youtube.toggleShuffle()", ng-class="youtube.shuffle ? 'btn-success' : 'btn-default'")
-					li.list-group-item.list-group-item-info {{youtube.videoTitle}}
+					li.list-group-item.list-group-item-info(ng-if="youtube.videoTitle") {{youtube.videoTitle}}
 					div(style='max-height:35vh;overflow-y:scroll')
 						a.list-group-item(ng-repeat="song in upcoming")
 							.btn-group.btn-group-xs.pull-right
