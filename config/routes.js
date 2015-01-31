@@ -1,11 +1,13 @@
 var request = require('request');
 var Q = require('q');
+var jsonPath = require('JSONPath');
+
 String.prototype.capitalize = function() {
 	return this.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
 };
 module.exports = function(app){
 
-	function fakeGet(url, res){
+	function fakeGet(url){
 		var deffered = Q.defer();
 		request(url, function (err, response, body){
 			if (err){
@@ -39,45 +41,8 @@ module.exports = function(app){
 		var songList = []
 		fakeGet(url)
 		.then(function (data){
-			var setlists = JSON.parse(data).setlists.setlist;
-			setlists.forEach(function (set){
-				if (set.sets){
-					if (set.sets.set.song){
-						if (set.sets.set.song['@name']){
-							songList.push(set.sets.set.song['@name']);
-						}
-						else {
-							set.sets.set.song.forEach(function (song){
-								var songName = song['@name'];
-								if (songName){
-									songList.push(songName);
-								}
-							})
-						}
-					}
-					else {
-						if (set.sets.set){
-							for (var i in set.sets.set){
-								var subSet = set.sets.set[i]
-								if (subSet.song){
-									if (subSet.song['@name']){
-										var songName = subSet.song['@name'];
-										songList.push(songName);
-									}
-									else {
-										for (var j in subSet.song){
-											var songName = subSet.song[j]['@name'];
-											if (songName){
-												songList.push(songName);
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			})
+			var jsonData = JSON.parse(data);
+			songList = jsonPath.eval(jsonData, '$.setlists.setlist[*].sets[*].song[*][@name]');
 			return deffered.resolve(songList)
 		})
 		.catch(function (err){
@@ -101,17 +66,17 @@ module.exports = function(app){
 					topSongs[song] = {
 						name : song,
 						artist : artistName,
-						played : 0
+						playCount : 0,
+						title : artistName +' - ' + song
 					};
 					promises.push(getYoutubeURL(artistName, topSongs[song]))
 				}
-				++topSongs[song].played;
+				++topSongs[song].playCount;
 			})
 			return Q.all(promises);
 		})
 		.then(function (data){
-			// console.log(artistName,data.length)
-			return deffered.resolve({name : artistName, songs : data})
+			return deffered.resolve(data)
 		})
 		.catch(function (err){
 			console.log(err)
@@ -125,7 +90,6 @@ module.exports = function(app){
 		var	url = 'http://gdata.youtube.com/feeds/api/videos?q=%22'
 								+ encodeURIComponent(artistName +' '+song.name)
 								+ '%22&orderby=viewCount&alt=json&max-results=10&format=5';
-
 		fakeGet(url)
 		.then(function (data){
 			data = JSON.parse(data)

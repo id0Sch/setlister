@@ -130,15 +130,10 @@ setListApp.service('VideosService', ['$window', '$rootScope', '$log', function (
 	}
 
 	this.queueVideo = function (id, title) {
-		if (!youtube.videoId){
-			this.launchPlayer(id , title)
-		} else {
-			upcoming.push({
-				id: id,
-				title: title
-			});
-
-		}
+		upcoming.push({
+			id: id,
+			title: title
+		});
 		return upcoming;
 	};
 

@@ -16,10 +16,11 @@ block content
 			a.list-group-item
 				input(type="search", required, placeholder="serach", ng-model='artistSearchFilter').form-control
 			div(style='max-height:80vh;overflow-y:scroll')
-				a.list-group-item(ng-repeat="artist in lineup | filter:artistSearchFilter",
-								  ng-click="showSetList(artist)"
-								  ng-class="{active : selectedArtist.name == artist.name}")
-					|	{{artist.name}}
+				li.list-group-item(ng-repeat="artist in lineup | filter:artistSearchFilter",
+								  ng-class="{'list-group-item-info' : selectedArtist.name == artist.name}")
+					button.btn.btn-default.btn-xs.pull-right(ng-click="queueArtist(artist)")
+						span.glyphicon.glyphicon-plus
+					p(ng-click="showSetList(artist)") {{artist.name}}
 					//- span.glyphicon.glyphicon-headphones.pull-right(ng-click='run(selectedArtist.name)')
 
 		.col-lg-3
@@ -32,14 +33,14 @@ block content
 					ul.list-group(ng-if="selectedArtist.topSongs", style='max-height:80vh;overflow-y:scroll')
 						a.list-group-item
 							input(type="search", required, placeholder="serach", ng-model='songSearchFilter').form-control
-						a.list-group-item(ng-repeat="song in selectedArtist.topSongs | orderBy:'played':true | limitTo: 15",
-							ng-click="queue(song.youtubeID, song.artist + ' - ' + song.name)")
+						a.list-group-item(ng-repeat="song in selectedArtist.topSongs | orderBy:'playCount':true | limitTo: 15")
 							{{song.name}}
-							button.btn.btn-default.btn-xs.pull-right(ng-click="launch(song.youtubeID,song.artist + ' - ' + song.name)")
-								span.glyphicon.glyphicon-play
-							button.btn.btn-default.btn-xs.pull-right(ng-click="queue(song.youtubeID, song.artist + ' - ' + song.name)")
-								span.glyphicon.glyphicon-plus
-							span.badge.active.pull-right   {{song.played}}
+							.btn-group.btn-group-xs.pull-left
+								button.btn.btn-default(ng-click="launch(song.youtubeID,song.title)")
+									span.glyphicon.glyphicon-play
+								button.btn.btn-default(ng-click="queue(song.youtubeID, song.title)")
+									span.glyphicon.glyphicon-plus
+							span.badge.active.pull-right   {{song.playCount}}
 
 		.col-lg-5.well.well-sm
 			.panel.panel-default
@@ -53,7 +54,7 @@ block content
 										   ng-class='youtube.state == "playing" ? "glyphicon-pause" : "glyphicon-play"')
 							button.btn.btn-default.glyphicon.glyphicon-step-forward(ng-click="youtube.nextVideo()")
 							button.btn.glyphicon.glyphicon-random(ng-click="youtube.toggleShuffle()", ng-class="youtube.shuffle ? 'btn-success' : 'btn-default'")
-					li.list-group-item.active Currently Playing: {{youtube.videoTitle}}
+					li.list-group-item.list-group-item-info {{youtube.videoTitle}}
 					div(style='max-height:35vh;overflow-y:scroll')
 						a.list-group-item(ng-repeat="song in upcoming")
 							.btn-group.btn-group-xs.pull-right

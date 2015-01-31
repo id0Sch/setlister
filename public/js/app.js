@@ -54,14 +54,29 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'VideosSer
 		var deffered = $q.defer();
 		$http.get('/getSetlist/'+artist.name)
 		.success( function (data){
-			return deffered.resolve(data.songs);
+			return deffered.resolve(data);
 		});
 		return deffered.promise
 	}
-
+	$scope.queueArtist = function (artist){
+		if (artist.topSongs){
+			for (song in artist.topSongs){
+				var song = artist.topSongs[song]
+				$scope.queue(song.youtubeID, song.title)
+			}
+			return
+		}
+		getSongs(artist)
+		.then(function (songs){
+			artist.topSongs = songs;
+			for (song in artist.topSongs){
+				var song = artist.topSongs[song]
+				$scope.queue(song.youtubeID, song.title)
+			}
+		})
+	}
 	$scope.showSetList = function (artist){
 		if ($scope.selectedArtist && $scope.selectedArtist.name === artist.name){
-			$scope.selectedArtist = null;
 			return;
 		}
 
@@ -74,10 +89,6 @@ setListApp.controller('setListCtrl', ['$scope', '$http', '$location', 'VideosSer
 		getSongs(artist)
 		.then(function (songs){
 			$scope.selectedArtist.topSongs = songs;
-			for (song in $scope.selectedArtist.topSongs){
-				var song = $scope.selectedArtist.topSongs[song]
-				$scope.queue(song.youtubeID, song.artist + ' - ' + song.name)
-			}
 		})
 	}
 	$scope.getLineup();
